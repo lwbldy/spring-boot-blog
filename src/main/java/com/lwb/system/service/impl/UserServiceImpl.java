@@ -1,5 +1,6 @@
 package com.lwb.system.service.impl;
 
+import com.lwb.common.dao.GeneratorMapper;
 import com.lwb.system.dao.UserDao;
 import com.lwb.system.domain.UserDO;
 import com.lwb.system.service.UserService;
@@ -20,12 +21,12 @@ public class UserServiceImpl implements UserService {
     @Autowired
     UserDao userMapper;
 
-
     @Override
     @Cacheable(value = "myCache", key = "'user_'+#id")
     public UserDO get(Long id) {
         System.out.println("--------------->>id-->"+id);
         UserDO userDO = userMapper.get(id);
+
         return userDO;
     }
 
