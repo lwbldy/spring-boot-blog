@@ -4,22 +4,25 @@ import com.lwb.common.util.MD5Utils;
 import com.lwb.common.util.R;
 import com.lwb.common.util.ShiroUtils;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 public class LoginController {
 
-
-    @RequestMapping("/login")
+    @PostMapping("/sys/login")
     @ResponseBody
-    R ajaxLogin(String username, String password) {
+    R ajaxLogin(String username, String password, HttpSession session) {
         password = MD5Utils.encrypt(username, password);
         UsernamePasswordToken token = new UsernamePasswordToken(username, password);
         Subject subject = SecurityUtils.getSubject();
@@ -29,6 +32,11 @@ public class LoginController {
         } catch (AuthenticationException e) {
             return R.error("用户或密码错误");
         }
+    }
+
+    @GetMapping("/sys/login")
+    String login(){
+        return "system/login";
     }
 
     @GetMapping("/nologing")
@@ -49,7 +57,6 @@ public class LoginController {
         ShiroUtils.logout();
         return R.ok("退出成功");
     }
-
 
     @RequiresPermissions("hasRols")
     @GetMapping("/hasRols")

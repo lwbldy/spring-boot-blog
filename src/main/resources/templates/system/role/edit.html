@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html  lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:include="include :: header">
+</head>
+
+<body>
+
+<div class="weadmin-body">
+    <form class="layui-form" action="" id="ajaxForm">
+        <div class="layui-form-item">
+            <label class="layui-form-label">角色名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="roleName" required lay-verify="required"
+                       placeholder="请输入角色名称" autocomplete="off" class="layui-input">
+                <div class="layui-form-mid layui-word-aux"></div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注</label>
+            <div class="layui-input-block">
+                <input type="text" name="remark" required lay-verify="required"
+                       placeholder="请输入备注" autocomplete="off" class="layui-input">
+                <div class="layui-form-mid layui-word-aux"></div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">功能权限</label>
+            <div class="layui-input-block">
+                <ul id="menuTree" class="ztree"></ul>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <input type="hidden" id="roleMenuIds" name="roleMenuIds">
+                <input type="hidden" id="roleId" name="roleId">
+                <button type="button" class="layui-btn" lay-submit lay-filter="subButton">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+<script type="text/javascript">
+
+    var menu_ztree;
+    // zTree设置
+    var menu_setting = {
+        data: {
+            simpleData: {
+                enable: true,
+                idKey: "menuId",
+                pIdKey: "parentId",
+                rootPId: -1
+            },
+            key: {
+                url:"nourl"
+            }
+        },
+        check:{
+            enable:true,
+            nocheckInherit:true,
+            chkboxType:{ "Y" : "ps", "N" : "s" }
+        }
+    };
+
+    $(function(){
+        $.get("/sys/menu/fundAll", function(r){
+            menu_ztree = $.fn.zTree.init($("#menuTree"), menu_setting, r);
+            //展开所有节点
+            menu_ztree.expandAll(true);
+
+            // 在展开后进行调用
+            $.post("/sys/role/findById/[[${id}]]",
+                function (data) {
+                    //表单自动填充
+                    $("#ajaxForm").autofill(data);
+
+                    //调用选中
+                    getRole(data.menuIdList)
+                },
+                "json"
+            );
+
+        },"json");
+    })
+
+    layui.use(['form', 'layedit', 'laydate','tree'], function(){
+        var form = layui.form   //只有执行了这一步，部分表单元素才会自动修饰成功
+            ,layedit = layui.layedit
+
+        //但是，如果你的HTML是动态生成的，自动渲染就会失效
+        //因此你需要在相应的地方，执行下述方法来手动渲染，跟这类似的还有 element.init();
+        form.render();
+
+        //监听提交
+        form.on('submit(subButton)', function(data){
+            selectMenuId();
+            subForm();
+        });
+
+    });
+
+    //获取所有选中菜单
+    function selectMenuId(){
+        //获取选择的菜单
+        var nodes = menu_ztree.getCheckedNodes(true);
+        var menuIdList = new Array();
+        var roleMenuIds = '';
+        for(var i=0; i<nodes.length; i++) {
+            menuIdList.push(nodes[i].menuId);
+            roleMenuIds +=nodes[i].menuId+','
+        }
+        console.log(JSON.stringify(menuIdList));
+        console.log(JSON.stringify(roleMenuIds));
+        $("#roleMenuIds").val(roleMenuIds);
+
+    }
+
+    function getRole(menuIds){
+        //勾选角色所拥有的菜单
+        for(var i=0; i<menuIds.length; i++) {
+            var node = menu_ztree.getNodeByParam("menuId", menuIds[i]);
+            menu_ztree.checkNode(node, true, false);
+        }
+    }
+
+    function subForm(){
+        $("#ajaxForm").ajaxSubmit({
+            type : 'post',
+            url : "/sys/role/update",
+            dataType:'json',
+            //data:  //注意只要是写在表单里面的，都不需要加这个属性。在controller中可以根据@RequestParam String str获取到属性值。
+            contentType : "application/x-www-form-urlencoded; charset=utf-8",
+            success: function(data) {
+                if(data.code == 0){
+                    layer.msg('修改成功',{
+                        time:1000,
+                        end:function () {
+                            closeThis();
+                        }
+                    });
+                }else{
+                    layer.msg(data.msg,{
+                        time:1000,
+                        end:function () {
+                            //closeThis();
+                        }
+                    });
+                }
+            },
+            error: function (data)//服务器响应失败处理函数
+            {
+                alert("出错");
+                closeThis();
+            }
+        });
+    }
+
+    function closeThis(){
+        //刷新父页面
+        window.parent.location.reload();
+        //关闭当前弹出层
+        var index = parent.layer.getFrameIndex(window.name);
+        //刷新父ID
+        parent.layer.close(index);
+    }
+
+</script>
+
+</body>
+</html>

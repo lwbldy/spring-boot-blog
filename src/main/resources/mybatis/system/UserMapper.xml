@@ -3,6 +3,29 @@
 
 <mapper namespace="com.lwb.system.dao.UserDao">
 
+    <resultMap id="baseDO" type="com.lwb.system.domain.UserDO">
+        <id column="user_id" property="userId"></id>
+        <result column="user_id" property="userId"></result>
+        <result column="username" property="username"></result>
+        <result column="name" property="name"></result>
+        <result column="password" property="password"></result>
+        <result column="dept_id" property="deptId"></result>
+        <result column="email" property="email"></result>
+        <result column="mobile" property="mobile"></result>
+        <result column="status" property="status"></result>
+        <result column="user_id_create" property="userIdCreate"></result>
+        <result column="gmt_create" property="gmtCreate"></result>
+        <result column="gmt_modified" property="gmtModified"></result>
+        <result column="sex" property="sex"></result>
+        <result column="birth" property="birth"></result>
+        <result column="pic_id" property="picId"></result>
+        <result column="live_address" property="liveAddress"></result>
+        <result column="hobby" property="hobby"></result>
+        <result column="province" property="province"></result>
+        <result column="city" property="city"></result>
+        <result column="district" property="district"></result>
+    </resultMap>
+
     <select id="get" resultType="com.lwb.system.domain.UserDO">
         select `user_id`,`username`,`name`,`password`,`dept_id`,`email`,`mobile`,`status`,`user_id_create`,`gmt_create`,`gmt_modified`,`sex`,`birth`,`pic_id`,`live_address`,`hobby`,`province`,`city`,`district` from sys_user where user_id = #{value}
     </select>
@@ -152,4 +175,70 @@
     <select id="listAllDept" resultType="long">
         select DISTINCT dept_id from sys_user
     </select>
+
+    <select id="pageList" resultMap="baseDO">
+        select `user_id`,`username`,`name`,`password`,`dept_id`,`email`,`mobile`,`status`,`user_id_create`,`gmt_create`,`gmt_modified`,`sex`,`birth`,`pic_id`,`live_address`,`hobby`,`province`,`city`,`district` from sys_user
+        <if test="condition != null">
+        <where>
+            <if test="condition.userId != null and condition.userId != ''"> and user_id = #{condition.userId} </if>
+            <if test="condition.username != null and condition.username != ''"> and username = #{condition.username} </if>
+            <if test="condition.name != null and condition.name != ''"> and name = #{condition.name} </if>
+            <if test="condition.password != null and condition.password != ''"> and password = #{condition.password} </if>
+            <if test="condition.deptId != null and condition.deptId != ''"> and dept_id = #{condition.deptId} </if>
+            <if test="condition.email != null and condition.email != ''"> and email = #{condition.email} </if>
+            <if test="condition.mobile != null and condition.mobile != ''"> and mobile = #{condition.mobile} </if>
+            <if test="condition.status != null and condition.status != ''"> and status = #{condition.status} </if>
+            <if test="condition.userIdCreate != null and condition.userIdCreate != ''"> and user_id_create = #{condition.userIdCreate} </if>
+            <if test="condition.gmtCreate != null and condition.gmtCreate != ''"> and gmt_create = #{condition.gmtCreate} </if>
+            <if test="condition.gmtModified != null and condition.gmtModified != ''"> and gmt_modified = #{condition.gmtModified} </if>
+            <if test="condition.sex != null and condition.sex != ''"> and sex = #{condition.sex} </if>
+            <if test="condition.birth != null and condition.birth != ''"> and birth = #{condition.birth} </if>
+            <if test="condition.picId != null and condition.picId != ''"> and pic_id = #{condition.picId} </if>
+            <if test="condition.liveAddress != null and condition.liveAddress != ''"> and live_address = #{condition.liveAddress} </if>
+            <if test="condition.hobby != null and condition.hobby != ''"> and hobby = #{condition.hobby} </if>
+            <if test="condition.province != null and condition.province != ''"> and province = #{condition.province} </if>
+            <if test="condition.city != null and condition.city != ''"> and city = #{condition.city} </if>
+            <if test="condition.district != null and condition.district != ''"> and district = #{condition.district} </if>
+        </where>
+        </if>
+        <choose>
+            <when test="sort != null and sort.trim() != ''">
+                order by ${sort} ${order}
+            </when>
+            <otherwise>
+                order by user_id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="pageCount" resultType="int">
+        select count(*) from sys_user
+        <if test="condition != null">
+        <where>
+            <if test="condition.userId != null and condition.userId != ''"> and user_id = #{condition.userId} </if>
+            <if test="condition.username != null and condition.username != ''"> and username = #{condition.username} </if>
+            <if test="condition.name != null and condition.name != ''"> and name = #{condition.name} </if>
+            <if test="condition.password != null and condition.password != ''"> and password = #{condition.password} </if>
+            <if test="condition.deptId != null and condition.deptId != ''"> and dept_id = #{condition.deptId} </if>
+            <if test="condition.email != null and condition.email != ''"> and email = #{condition.email} </if>
+            <if test="condition.mobile != null and condition.mobile != ''"> and mobile = #{condition.mobile} </if>
+            <if test="condition.status != null and condition.status != ''"> and status = #{condition.status} </if>
+            <if test="condition.userIdCreate != null and condition.userIdCreate != ''"> and user_id_create = #{condition.userIdCreate} </if>
+            <if test="condition.gmtCreate != null and condition.gmtCreate != ''"> and gmt_create = #{condition.gmtCreate} </if>
+            <if test="condition.gmtModified != null and condition.gmtModified != ''"> and gmt_modified = #{condition.gmtModified} </if>
+            <if test="condition.sex != null and condition.sex != ''"> and sex = #{condition.sex} </if>
+            <if test="condition.birth != null and condition.birth != ''"> and birth = #{condition.birth} </if>
+            <if test="condition.picId != null and condition.picId != ''"> and pic_id = #{condition.picId} </if>
+            <if test="condition.liveAddress != null and condition.liveAddress != ''"> and live_address = #{condition.liveAddress} </if>
+            <if test="condition.hobby != null and condition.hobby != ''"> and hobby = #{condition.hobby} </if>
+            <if test="condition.province != null and condition.province != ''"> and province = #{condition.province} </if>
+            <if test="condition.city != null and condition.city != ''"> and city = #{condition.city} </if>
+            <if test="condition.district != null and condition.district != ''"> and district = #{condition.district} </if>
+        </where>
+        </if>
+    </select>
+
 </mapper>

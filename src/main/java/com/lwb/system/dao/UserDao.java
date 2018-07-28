@@ -1,5 +1,6 @@
 package com.lwb.system.dao;
 
+import com.lwb.common.util.Page;
 import com.lwb.system.domain.UserDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
@@ -27,4 +28,7 @@ public interface UserDao {
 
     Long[] listAllDept();
 
+    List<UserDO> pageList(Page<UserDO> page);
+
+    int pageCount(Page<UserDO> page);
 }

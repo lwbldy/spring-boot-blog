@@ -3,6 +3,14 @@
 
 <mapper namespace="${package}.dao.${className}Dao">
 
+    <resultMap id="baseDO" type="${package}.domain.${className}DO">
+        <id column="${pk.columnName}" property="${pk.attrname}"></id>
+#foreach($column in $columns)
+        <result column="$column.columnName" property="$column.attrname"></result>
+#end
+    </resultMap>
+
+
 	<select id="get" resultType="${package}.domain.${className}DO">
 		select #foreach($column in $columns)`$column.columnName`#if($velocityCount != $columns.size()),#end#end from ${tableName} where ${pk.columnName} = #{value}
 	</select>

@@ -39,9 +39,9 @@ public class ShiroConfig {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         shiroFilterFactoryBean.setSecurityManager(securityManager);
         // 没有登陆的用户只能访问登陆页面
-        shiroFilterFactoryBean.setLoginUrl("/auth/login");
+        shiroFilterFactoryBean.setLoginUrl("/sys/login");
         // 登录成功后要跳转的链接
-        shiroFilterFactoryBean.setSuccessUrl("/auth/index");
+        shiroFilterFactoryBean.setSuccessUrl("/sys/index");
         // 未授权界面; ----这个配置了没卵用，具体原因想深入了解的可以自行百度
         //shiroFilterFactoryBean.setUnauthorizedUrl("/auth/403");
 
@@ -55,10 +55,12 @@ public class ShiroConfig {
         // 权限控制map.
         LinkedHashMap<String, String> filterChainDefinitionMap = new LinkedHashMap<>();
         filterChainDefinitionMap.put("/isloging", "authc");
-        filterChainDefinitionMap.put("/login", "anon");
+        filterChainDefinitionMap.put("/sys/login", "anon");
+        filterChainDefinitionMap.put("/static/**", "anon");
         filterChainDefinitionMap.put("/rowhtml", "anon");
         filterChainDefinitionMap.put("/logout", "logout");
         filterChainDefinitionMap.put("/**", "authc");
+//        filterChainDefinitionMap.put("/**", "anon");
 
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
         return shiroFilterFactoryBean;
@@ -108,7 +110,6 @@ public class ShiroConfig {
     public RedisCacheManager cacheManager() {
         RedisCacheManager redisCacheManager = new RedisCacheManager();
         redisCacheManager.setRedisManager(redisManager());
-
         return redisCacheManager;
     }
 

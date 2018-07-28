@@ -19,7 +19,7 @@ public class GeneratorServiceImplTest {
 
     @Test
     public void generatorCode() throws Exception {
-        String[] tableNames = new String[]{"sys_file","sys_user"}; //要生成的表
+        String[] tableNames = new String[]{"sys_user"}; //要生成的表
         //包名
         String packageName = "com.lwb.system";
         //作者
@@ -27,9 +27,9 @@ public class GeneratorServiceImplTest {
         //邮箱信息
         String email = "lwbldy@163.com";
         //自动去除表前缀，默认是 true
-        boolean autoRemovePre = false;
+        boolean autoRemovePre = true;
         //表前缀(类名不会包含表前缀)
-        String tablePrefix = "";
+        String tablePrefix = "sys_";
         String outputDir = "D:\\codeGen";
         generatorService.generatorCode(tableNames, packageName, author, email,
                 autoRemovePre,tablePrefix,outputDir);

@@ -1,5 +1,6 @@
 package com.lwb.system.service;
 
+import com.lwb.common.util.Page;
 import com.lwb.system.domain.UserDO;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,4 +52,11 @@ public interface UserService {
      * @param id
      */
     void modifyUser(Long id);
+
+    /**
+     * 分页查询用户列表
+     * @param page
+     * @return
+     */
+    Page findByPage(Page page);
 }

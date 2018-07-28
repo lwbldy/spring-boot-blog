@@ -1,0 +1,221 @@
+
+<!DOCTYPE html>
+<html  lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include :: header">
+</head>
+<body>
+
+<div class="weadmin-body">
+
+    <div id="menuLayer" style="display: none">
+        <ul id="menuTree"></ul>
+    </div>
+
+
+    <form class="layui-form" action="" id="ajaxForm">
+        <div class="layui-form-item">
+            <label class="layui-form-label">类型</label>
+            <div class="layui-input-block">
+                <input type="radio" name="type" value="0" title="目录" lay-filter="radio">
+                <input type="radio" name="type" value="1" title="菜单" lay-filter="radio">
+                <input type="radio" name="type" value="2" title="按钮" lay-filter="radio">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">菜单名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="name" required lay-verify="required"
+                       placeholder="请输入菜单名称" autocomplete="off" class="layui-input">
+                <div class="layui-form-mid layui-word-aux"></div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">上级菜单</label>
+            <div class="layui-input-block">
+                <input type="text" name="parentName" id="parentName" required lay-verify="required" readonly onclick="opMenuTree()"
+                       placeholder="一级菜单" autocomplete="off" class="layui-input">
+
+                <div class="layui-form-mid layui-word-aux"></div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">菜单URL</label>
+            <div class="layui-input-block">
+                <input type="text" name="url"
+                       placeholder="请输入菜单URL" autocomplete="off" class="layui-input" >
+                <div class="layui-form-mid layui-word-aux"></div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">授权标识</label>
+            <div class="layui-input-block">
+                <input type="text" name="perms"
+                       placeholder="多个用逗号分隔，如：user:list,user:create" autocomplete="off" class="layui-input">
+                <div class="layui-form-mid layui-word-aux"></div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">排序号</label>
+            <div class="layui-input-block">
+                <input type="text" name="orderNum" required lay-verify="required"
+                       placeholder="排序号" autocomplete="off" class="layui-input" value="0">
+                <div class="layui-form-mid layui-word-aux"></div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">图标</label>
+            <div class="layui-input-block">
+                <input type="text" name="icon"
+                       placeholder="菜单图标" autocomplete="off" class="layui-input">
+                <div class="layui-form-mid layui-word-aux">
+                    获取图标：http://www.layui.com/doc/element/icon.html
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <input type="hidden" name="parentId" id="parentId">
+                <input type="hidden" name="menuId" id="menuId" th:value="${id}">
+                <button type="button" class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript" th:inline="javascript">
+
+    layui.use(['form','layer','tree','laydate','jquery'], function() {
+        var form = layui.form,
+            admin = layui.admin,
+            layer = layui.layer
+            , laydate = layui.laydate;
+
+        //初始化tree
+        $(document).ready(function(){
+            $.get("/sys/menu/fundAll",
+                function (data) {
+                    var menu1=[];
+                    for(var i in data){
+                        if(data[i].parentId == 0){
+                            var m = {name:data[i].name,id:data[i].menuId,children:[]};
+                            menu1.push(m);
+                        }
+                    }
+                    for(var i in data){
+                        for(var j in menu1){
+                            if(data[i].parentId == menu1[j].id){
+                                var m = {name:data[i].name,id:data[i].menuId};
+                                menu1[j].children.push(m);
+                            }
+                        }
+                    }
+                    var rootMenu = [{name:"一级菜单",id:0,children:menu1}];
+
+                    layui.tree({
+                        elem: '#menuTree' //传入元素选择器
+                        ,click:function(item){
+                            console.log(JSON.stringify(item));
+                            checkedName= item.name;
+                            checkedId = item.id;
+                            $("#parentName").val(checkedName);
+                            $("#parentId").val(checkedId);
+                            layer.close(dateMenuTree);
+                        }
+                        ,nodes: rootMenu
+                    });
+                },
+                "json"
+            );
+
+            $.post("/sys/menu/findById/[[${id}]]",
+                function (data) {
+                    //表单自动填充
+                    $("#ajaxForm").autofill(data);
+                    if(data.parentId == 0){
+                        $("#parentName").val("一级菜单");
+                    }
+
+                    //但是，如果你的HTML是动态生成的，自动渲染就会失效
+                    //因此你需要在相应的地方，执行下述方法来手动渲染，跟这类似的还有 element.init();
+                    form.render();
+                },
+                "json"
+            );
+
+
+        });
+
+        //监听提交
+        form.on('submit(formDemo)', function(data){
+            subForm();
+        });
+
+        form.on('radio(radio)', function(data){
+            console.log(data.value); //被点击的radio的value值
+        });
+    })
+
+
+    function subForm(){
+        $("#ajaxForm").ajaxSubmit({
+            type : 'post',
+            url : "/sys/menu/update",
+            dataType:'json',
+            //data:  //注意只要是写在表单里面的，都不需要加这个属性。在controller中可以根据@RequestParam String str获取到属性值。
+            contentType : "application/x-www-form-urlencoded; charset=utf-8",
+            success: function(data) {
+
+                if(data.code == 0){
+                    layer.msg('修改成功',{
+                        time:1000,
+                        end:function () {
+                            closeThis();
+                        }
+                    });
+                }else{
+                    layer.msg(data.msg,{
+                        time:1000,
+                        end:function () {
+                            //closeThis();
+                        }
+                    });
+                }
+            },
+            error: function (data)//服务器响应失败处理函数
+            {
+                alert("出错");
+                closeThis();
+            }
+        });
+    }
+
+
+    function opMenuTree(){
+        dateMenuTree = layer.open({
+            type: 1,
+            offset: '50px',
+            title: "选择菜单",
+            area: ['300px', '450px'],
+            shade: 0,
+            shadeClose: false,
+            content: jQuery("#menuLayer"),
+            end:function(){
+                $("#menuLayer").hide();
+            }
+        });
+    }
+
+
+
+</script>
+
+</body>
+</html>

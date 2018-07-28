@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html  lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:include="include :: header">
+</head>
+
+<body>
+
+<div class="weadmin-body">
+    <div class="weadmin-block">
+
+        <button class="layui-btn" onclick="WeAdminShow('增加菜单','./add',600)"><i class="layui-icon"></i>添加</button>
+
+        <a class="layui-btn layui-btn-sm" style="line-height:1.6em;margin-top:3px;float:right"
+           href="javascript:location.replace(location.href);" title="刷新">
+            <i class="layui-icon" style="line-height:30px">ဂ</i>
+        </a>
+    </div>
+
+    <table id="table" class="layui-table">
+        <thead>
+        <tr>
+            <th>菜单id</th>
+            <th>菜单名称</th>
+            <th>上级菜单</th>
+            <th>图标</th>
+            <th>类型</th>
+            <th>排序号</th>
+            <th>菜单url</th>
+            <th>授权标识</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody id="tableBody">
+
+        </tbody>
+    </table>
+
+</div>
+<script type="text/javascript">
+    layui.extend({
+        admin: '/static/js/admin'
+    });
+
+    layui.use(['laydate', 'jquery', 'admin'], function () {
+        var laydate = layui.laydate,
+            $ = layui.jquery,
+            admin = layui.admin;
+
+    });
+
+    $.get("/sys/menu/fundAll",
+        function (data) {
+            GetTree(data);
+        },
+        "json"
+    );
+
+    function GetTree( data ){
+
+        var menu1 = [];
+        var menu2 = [];
+        var menu3 = [];
+        var menu4 = [];
+
+        for(var i in data){
+            if(data[i].parentId==0){
+                menu1.push(data[i]);
+            }
+        }
+
+        for(var i in data){
+            for(var j in menu1){
+                if(data[i].parentId==menu1[j].menuId){
+                    menu2.push(data[i]);
+                }
+            }
+        }
+
+        for(var i in data){
+            for(var j in menu2){
+                if(data[i].parentId==menu2[j].menuId){
+                    menu3.push(data[i]);
+                }
+            }
+        }
+
+        for(var i in data){
+            for(var j in menu3){
+                if(data[i].parentId==menu3[j].menuId){
+                    menu4.push(data[i]);
+                }
+            }
+        }
+
+        var newList = [];
+        for(var i in menu1){
+            newList.push(menu1[i]);
+            for(var j in menu2){
+                if(menu2[j].parentId == menu1[i].menuId){
+                    newList.push(menu2[j]);
+                    for(var k in menu3){
+                        if(menu3[k].parentId == menu2[j].menuId){
+                            newList.push(menu3[k]);
+                            for(var l in menu4){
+                                if(menu4[l].parentId == menu3[k].menuId){
+                                    newList.push(menu4[l]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        var html = "";
+        for(var i in newList){
+            html += "<tr data-tt-id='"+newList[i].menuId+"' data-tt-parent-id='"+newList[i].parentId+"'>";
+            html += "<td>"+newList[i].menuId+"</td>";
+            html += "<td>"+newList[i].name+"</td>";
+            if(newList[i].parentName == undefined){
+                html += "<td></td>";
+            }else{
+                html += "<td>"+newList[i].parentName+"</td>";
+            }
+
+            html += "<td><i class='layui-icon'>"+newList[i].icon+"</i></td>";
+            if(newList[i].type==0){
+                html += "<td><div class='layui-badge layui-bg-blue'>目录</div></td>";
+            }else if(newList[i].type==1){
+                html += "<td><div class='layui-badge layui-bg-green'>菜单</div></td>";
+            }else{
+                html += "<td><div class='layui-badge layui-bg-orange'>按钮</div></td>";
+            }
+            html += "<td>"+newList[i].orderNum+"</td>";
+            html += "<td>"+newList[i].url+"</td>";
+            html += "<td>"+newList[i].perms+"</td>";
+            html += "<td><button onclick='update("+newList[i].menuId+")' class='layui-btn layui-btn-xs'>修改</button> </td>";
+            html += "</tr>";
+        }
+        $("#tableBody").html(html);
+        $("#table").treetable({ expandable: true }).treetable("expandNode", 1);
+    }
+
+    function update(id){
+        WeAdminShow('修改菜单','/sys/menu/update/'+id,600)
+    }
+
+
+</script>
+</body>
+
+</html>
